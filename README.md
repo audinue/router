@@ -18,9 +18,6 @@ router.bind('#root')
 // Force the router to use hash (#/foo)
 router.hash()
 
-// Reload on popstate
-router.update()
-
 // Defining routes
 router.get( // or post() or all()
   '/foo', 
@@ -74,4 +71,22 @@ router.fetch('/').then(res => {
 var unsubscribe = router.subscribe(function (event) {
   console.log(event.type) // 'loading' or 'loaded'
 })
+```
+
+## Loading Indicator
+
+```html
+<style>
+  .loading .indicator {
+    display: block;
+  }
+  .indicator {
+    display: none;
+  }
+</style>
+<div id="indicator">Loading...</div>
+<div id="root"></div>
+<script>
+  router.bind('#root')
+</script>
 ```

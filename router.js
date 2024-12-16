@@ -20,22 +20,33 @@ var router = (function () {
     }
   }
 
+  var wrap = function (request, response) {
+    if (response !== null && response !== undefined && response.tag === tag) {
+      return response
+    }
+    return {
+      tag: tag,
+      body: response,
+      url: request.url,
+      state: request.state
+    }
+  }
+
   var proxies = []
   var routes = []
 
   var add = function (methods) {
-    return function (path, fetch) {
+    return function (path, callback) {
       var regExp = new RegExp(
         '^' +
           path
             .replace(/[/.-]/g, '\\$&')
             .replace(/\:([^\\]+)/g, '(?<$1>[/.-]+)')
-            .replace(/\*(.+)/g, '(?<$1>.+)') +
+            .replace(/\*(.+)/g, '(?<$1>.*)') +
           '$'
       )
       var route = {
         path: path,
-        fetch: fetch,
         match: function (request) {
           if (methods.includes(request.method)) {
             var match = regExp.exec(request.url.pathname)
@@ -43,9 +54,16 @@ var router = (function () {
               return match.groups || {}
             }
           }
+        },
+        fetch: function (request, params, next) {
+          return Promise.resolve(callback(request, params, next)).then(
+            function (response) {
+              return wrap(request, response)
+            }
+          )
         }
       }
-      if (fetch.length === 3) {
+      if (callback.length === 3) {
         proxies.push(route)
       } else {
         routes.push(route)
@@ -62,12 +80,13 @@ var router = (function () {
     {
       path: '/404',
       fetch: function (request) {
-        return (
+        return wrap(
+          request,
           '<pre>Unable to ' +
-          request.method +
-          ' ' +
-          request.url.pathname +
-          '</pre>'
+            request.method +
+            ' ' +
+            request.url.pathname +
+            '</pre>'
         )
       }
     },
@@ -75,7 +94,7 @@ var router = (function () {
       path: '/500',
       fetch: function (request) {
         console.error(request.error)
-        return '<pre>' + request.error.stack + '</pre>'
+        return wrap(request, '<pre>' + request.error.stack + '</pre>')
       }
     }
   ]
@@ -98,7 +117,7 @@ var router = (function () {
         var params = proxy.match(request)
         if (params) {
           proxied = (function (fetch, params, next) {
-            return function (request) {
+            return function call (request) {
               return fetch(request, params, next)
             }
           })(proxy.fetch, params, proxied)
@@ -125,16 +144,6 @@ var router = (function () {
         return proxy(routes.concat(defaults).find(path('/500')).fetch)(
           Object.assign({}, request, { error: error })
         )
-      })
-      .then(function (response) {
-        if (
-          response !== null &&
-          response !== undefined &&
-          response.tag === tag
-        ) {
-          return response
-        }
-        return { body: response, url: request.url, state: request.state }
       })
       .then(function (response) {
         if (response.location) {
@@ -171,59 +180,83 @@ var router = (function () {
     }
   }
 
-  var loading = false
+  var safe = function (url) {
+    return hashing ? '#' + url.pathname : url
+  }
 
-  var navigate = function (url, options) {
-    if (!loading) {
-      loading = true
+  var controller = null
+  var cache = JSON.parse(localStorage.getItem('cache') || '{}')
+
+  var route = function (url, options) {
+    var loader = { aborted: false }
+    if (controller) {
+      controller.aborted = true
+    } else {
+      root.classList.add('loading')
       notify({ type: 'loading' })
-      return fetch(url, options).then(function (response) {
-        var body = response.body
-        var url = hashing ? '#' + response.url.pathname : response.url
-        root.innerHTML = body
-        if (response.state === 'REPLACE') {
-          history.replaceState(body, '', url)
-        } else {
-          history.pushState(body, '', url)
-        }
-        var element = root.querySelector('[autofocus]')
-        if (element) {
-          element.focus()
-        }
-        loading = false
-        notify({ type: 'loaded' })
-      })
     }
+    controller = loader
+    var pushed = false
+    if (!options || options.method !== 'POST' || !options.popstate) {
+      var key = new URL(url, current())
+      if (key in cache) {
+        var body = cache[key]
+        root.innerHTML = body
+        if (!options || options.state !== 'REPLACE') {
+          history.pushState(body, '', safe(key))
+          pushed = true
+        }
+      }
+    }
+    fetch(url, options)
+      .then(function (response) {
+        var body = response.body
+        cache[response.url] = body
+        localStorage.setItem('cache', JSON.stringify(cache))
+        if (controller === loader) {
+          var url = safe(response.url)
+          root.innerHTML = body
+          if (response.state === 'REPLACE') {
+            history.replaceState(body, '', url)
+          } else if (!pushed) {
+            history.pushState(body, '', url)
+          }
+          var element = root.querySelector('[autofocus]')
+          if (element) {
+            element.focus()
+          }
+        }
+      })
+      .finally(function () {
+        if (controller === loader) {
+          controller = null
+          notify({ type: 'loaded' })
+          root.classList.remove('loading')
+        }
+      })
     return this
   }
 
-  var push = function (url) {
-    navigate(url)
+  var push = function (url, options) {
+    route(url, options)
     return this
   }
 
-  var replace = function (url) {
-    navigate(url, { state: 'REPLACE' })
+  var replace = function (url, options) {
+    route(url, Object.assign({ state: 'REPLACE' }, options))
     return this
   }
 
-  var reload = function () {
-    return replace('')
+  var reload = function (options) {
+    return replace('', options)
   }
 
   var self = function (element) {
-    return element.target === '' || element.target === 'self'
+    return element.target === '' || element.target === '_self'
   }
 
   var acceptable = function (url) {
     return url.origin === location.origin
-  }
-
-  var updating = false
-
-  var update = function () {
-    updating = true
-    return this
   }
 
   addEventListener('DOMContentLoaded', function () {
@@ -234,14 +267,12 @@ var router = (function () {
   addEventListener('popstate', function (event) {
     if (event.state !== null) {
       root.innerHTML = event.state
-      if (updating) {
-        reload()
-      }
+      reload({ popstate: true })
     }
   })
 
   addEventListener('hashchange', function () {
-    if (history.state === null) {
+    if (hashing && history.state === null) {
       reload()
     }
   })
@@ -253,7 +284,7 @@ var router = (function () {
         var url = new URL(href, current())
         if (acceptable(url)) {
           event.preventDefault()
-          navigate(url)
+          route(url)
         }
       }
     }
@@ -274,9 +305,9 @@ var router = (function () {
             }
             url.searchParams.set(entry.value[0], entry.value[1])
           }
-          navigate(url)
+          route(url)
         } else {
-          navigate(url, { method: 'POST', body: body })
+          route(url, { method: 'POST', body: body })
         }
       }
     }
@@ -293,7 +324,6 @@ var router = (function () {
     subscribe: subscribe,
     push: push,
     replace: replace,
-    reload: reload,
-    update: update
+    reload: reload
   }
 })()
