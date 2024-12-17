@@ -6,12 +6,6 @@ var router = (function () {
     return this
   }
 
-  var tag = {}
-
-  var redirect = function (location) {
-    return { tag: tag, location: location }
-  }
-
   var current = function () {
     if (hashing) {
       return new URL(location.hash.substring(1), location.origin)
@@ -20,15 +14,22 @@ var router = (function () {
     }
   }
 
+  var RESPONSE = {}
+
+  var redirect = function (location) {
+    return { tag: RESPONSE, location: location }
+  }
+
   var wrap = function (request, response) {
-    if (response !== null && response !== undefined && response.tag === tag) {
+    if (response && response.tag === RESPONSE) {
       return response
-    }
-    return {
-      tag: tag,
-      body: response,
-      url: request.url,
-      state: request.state
+    } else {
+      return {
+        tag: RESPONSE,
+        body: response,
+        url: request.url,
+        state: request.state
+      }
     }
   }
 
@@ -99,6 +100,20 @@ var router = (function () {
     }
   ]
 
+  var make = function (url) {
+    return new URL(url, current())
+  }
+
+  var REQUEST = {}
+
+  var create = function (url, options) {
+    if (url && url.tag === REQUEST) {
+      return url
+    } else {
+      return Object.assign({ method: 'GET', url: make(url) }, options)
+    }
+  }
+
   var path = function (value) {
     return function (route) {
       return route.path === value
@@ -106,24 +121,18 @@ var router = (function () {
   }
 
   var fetch = function (url, options) {
-    var request = Object.assign(
-      { method: 'GET', url: new URL(url, current()) },
-      options
-    )
+    var request = create(url, options)
     var proxy = function (end) {
-      var proxied = end
-      for (var i = 0; i < proxies.length; i++) {
-        var proxy = proxies[i]
+      return proxies.reduce(function (next, proxy) {
         var params = proxy.match(request)
         if (params) {
-          proxied = (function (fetch, params, next) {
-            return function call (request) {
-              return fetch(request, params, next)
-            }
-          })(proxy.fetch, params, proxied)
+          return function (request) {
+            return proxy.fetch(request, params, next)
+          }
+        } else {
+          return next
         }
-      }
-      return proxied
+      }, end)
     }
     var promise = new Promise(function (resolve) {
       request.query = request.url.searchParams
@@ -155,13 +164,6 @@ var router = (function () {
       })
   }
 
-  var root = 'body'
-
-  var bind = function (selector) {
-    root = selector
-    return this
-  }
-
   var subscribers = []
 
   var subscribe = function (subscriber) {
@@ -181,45 +183,63 @@ var router = (function () {
   }
 
   var safe = function (url) {
-    return hashing ? '#' + url.pathname : url
+    return hashing ? '#' + url.pathname + url.search : url
   }
 
-  var controller = null
+  var selector = 'body'
+
+  var bind = function (root) {
+    selector = root
+    return this
+  }
+
+  var root
+
+  var loading = null
+
   var cache = JSON.parse(localStorage.getItem('cache') || '{}')
 
   var route = function (url, options) {
-    var loader = { aborted: false }
-    if (controller) {
-      controller.aborted = true
-    } else {
+    var id = {}
+    if (!loading) {
       root.classList.add('loading')
       notify({ type: 'loading' })
     }
-    controller = loader
+    loading = id
+    var request = create(url, options)
     var pushed = false
-    if (!options || options.method !== 'POST' || !options.popstate) {
-      var key = new URL(url, current())
-      if (key in cache) {
-        var body = cache[key]
-        root.innerHTML = body
-        if (!options || options.state !== 'REPLACE') {
-          history.pushState(body, '', safe(key))
-          pushed = true
-        }
+    if (
+      request.method !== 'POST' &&
+      !request.restored &&
+      request.url in cache
+    ) {
+      var entry = cache[request.url]
+      root.innerHTML = entry.body
+      if (request.state !== 'REPLACE') {
+        history.pushState(entry.body, '', entry.url)
+        pushed = true
       }
     }
     fetch(url, options)
       .then(function (response) {
         var body = response.body
-        cache[response.url] = body
-        localStorage.setItem('cache', JSON.stringify(cache))
-        if (controller === loader) {
-          var url = safe(response.url)
+        var url = safe(response.url)
+        if (request.method !== 'POST') {
+          cache[request.url] = { body: body, url: url }
+          localStorage.setItem('cache', JSON.stringify(cache))
+        }
+        if (loading === id) {
           root.innerHTML = body
           if (response.state === 'REPLACE') {
             history.replaceState(body, '', url)
-          } else if (!pushed) {
-            history.pushState(body, '', url)
+          } else {
+            if (pushed) {
+              if (entry.url !== url) {
+                history.replaceState(body, '', url)
+              }
+            } else {
+              history.pushState(body, '', url)
+            }
           }
           var element = root.querySelector('[autofocus]')
           if (element) {
@@ -228,8 +248,8 @@ var router = (function () {
         }
       })
       .finally(function () {
-        if (controller === loader) {
-          controller = null
+        if (loading === id) {
+          loading = null
           notify({ type: 'loaded' })
           root.classList.remove('loading')
         }
@@ -260,14 +280,14 @@ var router = (function () {
   }
 
   addEventListener('DOMContentLoaded', function () {
-    root = document.querySelector(root)
+    root = document.querySelector(selector)
     reload()
   })
 
   addEventListener('popstate', function (event) {
     if (event.state !== null) {
       root.innerHTML = event.state
-      reload({ popstate: true })
+      reload({ restored: true })
     }
   })
 
@@ -281,7 +301,7 @@ var router = (function () {
     if (event.target.nodeName === 'A' && self(event.target)) {
       var href = event.target.getAttribute('href')
       if (href !== null) {
-        var url = new URL(href, current())
+        var url = make(href)
         if (acceptable(url)) {
           event.preventDefault()
           route(url)
@@ -292,7 +312,7 @@ var router = (function () {
 
   addEventListener('submit', function (event) {
     if (self(event.target)) {
-      var url = new URL(event.target.getAttribute('action') || '', current())
+      var url = make(event.target.getAttribute('action') || '')
       if (acceptable(url)) {
         event.preventDefault()
         var body = new FormData(event.target, event.submitter)
