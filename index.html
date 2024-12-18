@@ -17,13 +17,13 @@
 </div>
 
 <script type="module">
-  import { cache, bind, get, post, redirect } from './src/index.mjs'
+  import { cache, bind, get, post, redirect, update } from './src/index.mjs'
   import { html } from 'https://esm.sh/@audinue/html'
 
   const delay = () => new Promise(resolve => setTimeout(resolve, 1000))
 
+  update()
   cache()
-
   bind('#root')
 
   get('/', () => {
@@ -65,6 +65,7 @@
   })
 
   get('/async', async () => {
+    console.log('/async')
     await delay()
     return html`Now: ${Date.now()}`
   })
@@ -102,6 +103,8 @@
   })
 
   post('/form-post', async req => {
+    console.log('/form-post')
+    await delay()
     q = req.body.get('q')
     return redirect('/form-post')
   })
