@@ -19,4 +19,7 @@ let find = path => {
   }).fetch
 }
 
-export { acceptable, find, safe, self }
+let state = element => (element.hasAttribute('replace') ? 'REPLACE' : 'PUSH')
+
+export { acceptable, find, safe, self, state }
+
