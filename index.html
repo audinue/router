@@ -1,0 +1,147 @@
+<style>
+  .loading ~ .spinner {
+    display: block;
+  }
+  .spinner {
+    position: fixed;
+    right: 0.5rem;
+    top: 0.5rem;
+    display: none;
+  }
+</style>
+
+<div id="root"></div>
+
+<div class="spinner">
+  <img src="https://api.iconify.design/svg-spinners:270-ring-with-bg.svg" />
+</div>
+
+<script type="module">
+  import { cache, bind, get, post, redirect } from './src/index.mjs'
+  import { html } from 'https://esm.sh/@audinue/html'
+
+  const delay = () => new Promise(resolve => setTimeout(resolve, 1000))
+
+  cache()
+
+  bind('#root')
+
+  get('/', () => {
+    return html`
+      <h1>Test</h1>
+      <ul>
+        <li>
+          <a href="/not-found">Not Found</a>
+        </li>
+        <li>
+          <a href="/error">Error</a>
+        </li>
+        <li>
+          <a href="/async">Async</a>
+        </li>
+        <li>
+          <a href="/redirect">Redirect</a>
+        </li>
+        <li>
+          <a href="/form-get">Form Get</a>
+        </li>
+        <li>
+          <a href="/form-post">Form Post</a>
+        </li>
+        <li>
+          <a href="/proxy">Proxy</a>
+        </li>
+        <li>
+          <a href="/foo">Foo</a>
+        </li>
+        <li>
+          <a href="/bar">Bar</a>
+        </li>
+        <li>
+          <a href="/baz">Baz</a>
+        </li>
+      </ul>
+    `
+  })
+
+  get('/async', async () => {
+    await delay()
+    return html`Now: ${Date.now()}`
+  })
+
+  get('/redirect', async () => {
+    return redirect('/target')
+  })
+
+  get('/target', async () => {
+    return html`Redirect target page.`
+  })
+
+  get('/error', async () => {
+    throw new Error('Awesome!')
+  })
+
+  get('/form-get', async req => {
+    return html`
+      <pre>${JSON.stringify(Object.fromEntries(req.query))}</pre>
+      <form>
+        <input name="q" />
+      </form>
+    `
+  })
+
+  let q = ''
+
+  get('/form-post', async () => {
+    return html`
+      <pre>q = ${JSON.stringify(q)}</pre>
+      <form method="post">
+        <input name="q" />
+      </form>
+    `
+  })
+
+  post('/form-post', async req => {
+    q = req.body.get('q')
+    return redirect('/form-post')
+  })
+
+  get('/proxy', async () => {
+    return html`Response from route`
+  })
+
+  get('/proxy', async (req, _, next) => {
+    return (await next(req)).body + ' - Response from proxy'
+  })
+
+  get('/foo', async () => {
+    await delay()
+    return redirect('/bar')
+    return html`
+      <h1>Foo</h1>
+      <a href="/foo">foo</a>
+      <a href="/bar">bar</a>
+      <a href="/baz">baz</a>
+    `
+  })
+
+  get('/bar', async () => {
+    await delay()
+    return html`
+      <h1>Bar</h1>
+      <a href="/foo">foo</a>
+      <a href="/bar">bar</a>
+      <a href="/baz">baz</a>
+    `
+  })
+
+  get('/baz', async () => {
+    await delay()
+    return html`
+      <h1>Baz</h1>
+      <a href="/foo">foo</a>
+      <a href="/bar">bar</a>
+      <a href="/baz">baz</a>
+    `
+  })
+</script>
