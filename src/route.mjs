@@ -17,17 +17,27 @@ let abort = () => {
 
 let caches
 
+let equals = (a, b) => {
+  return a && a.method === b.method && a.url === b.url
+}
+
 let route = async (url, options) => {
-  if (caching && !caches) {
-    caches = JSON.parse(localStorage.getItem('caches') || '{}')
+  let request = create(url, options)
+  let id = {
+    method: request.method,
+    url: request.url.toString()
   }
-  let id = {}
+  if (equals(loading, id)) {
+    return
+  }
   if (!loading) {
     root.classList.add('loading')
     notify({ type: 'loading' })
   }
   loading = id
-  let request = create(url, options)
+  if (caching && !caches) {
+    caches = JSON.parse(localStorage.getItem('caches') || '{}')
+  }
   let cached =
     caching &&
     request.method !== 'POST' &&
@@ -44,7 +54,7 @@ let route = async (url, options) => {
     let response = await fetch(request)
     let body = String(response.body)
     let url = safe(response.url)
-    if (loading === id) {
+    if (equals(loading, id)) {
       root.innerHTML = body
       if (response.url.toString() !== request.url.toString()) {
         if (response.state === 'REPLACE' || cached) {
@@ -71,7 +81,7 @@ let route = async (url, options) => {
       localStorage.setItem('caches', JSON.stringify(caches))
     }
   } finally {
-    if (loading === id) {
+    if (equals(loading, id)) {
       loading = null
       root.classList.remove('loading')
       notify({ type: 'loaded' })
