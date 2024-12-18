@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "main": "src/index.mjs",
   "type": "module",
-  "license": "ISC",
   "scripts": {
     "dev": "serve -s",
     "build": "esbuild --bundle --minify --sourcemap --format=esm --outfile=index.js src/index.mjs"
@@ -11,5 +10,8 @@
   "devDependencies": {
     "esbuild": "^0.24.0",
     "serve": "^14.2.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
