@@ -5,7 +5,9 @@ Client side routing framework.
 ## Install
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/audinue/router/router.js"></script>
+<script type="module">
+  import {} from 'https://esm.sh/@audinue/router'
+</script>
 ```
 
 ## Usage
