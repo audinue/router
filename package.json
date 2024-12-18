@@ -1,11 +1,11 @@
 {
   "name": "@audinue/router",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "main": "src/index.mjs",
   "type": "module",
   "scripts": {
     "dev": "serve -s",
-    "build": "esbuild --bundle --minify --sourcemap --format=esm --outfile=index.js src/index.mjs"
+    "build": "esbuild --bundle --minify --sourcemap --global-name=router --outfile=router.js src/index.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.24.0",

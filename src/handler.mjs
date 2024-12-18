@@ -1,4 +1,4 @@
-import { updating } from './config.mjs'
+import { hashing, updating } from './config.mjs'
 import { init, root } from './root.mjs'
 import { abort, reload, route } from './route.mjs'
 import { make } from './url.mjs'

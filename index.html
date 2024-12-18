@@ -17,13 +17,14 @@
 </div>
 
 <script type="module">
-  import { cache, bind, get, post, redirect, update } from './src/index.mjs'
+  import { cache, bind, hash, get, post, redirect, update } from './src/index.mjs'
   import { html } from 'https://esm.sh/@audinue/html'
 
   let delay = () => new Promise(resolve => setTimeout(resolve, 1000))
 
   // update()
   // cache()
+  hash()
   bind('#root')
 
   get('/', () => {
