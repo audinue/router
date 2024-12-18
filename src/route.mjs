@@ -3,7 +3,7 @@ import { notify } from './event.mjs'
 import { fetch } from './fetch.mjs'
 import { create } from './request.mjs'
 import { root } from './root.mjs'
-import { safe } from './util.mjs'
+import { equals, render, safe } from './util.mjs'
 
 let loading = null
 
@@ -16,10 +16,6 @@ let abort = () => {
 }
 
 let caches
-
-let equals = (a, b) => {
-  return a && a.method === b.method && a.url === b.url
-}
 
 let route = async (url, options) => {
   let request = create(url, options)
@@ -38,16 +34,19 @@ let route = async (url, options) => {
   if (caching && !caches) {
     caches = JSON.parse(localStorage.getItem('caches') || '{}')
   }
+  let requestUrl = safe(request.url)
   let cached =
     caching &&
     request.method !== 'POST' &&
     !request.restored &&
-    request.url in caches
+    requestUrl in caches
   if (cached) {
-    let { body, url } = caches[request.url]
-    root.innerHTML = body
-    if (request.state !== 'REPLACE') {
-      history.pushState(body, '', url)
+    let entry = caches[requestUrl]
+    render(entry.body)
+    if (request.state === 'REPLACE') {
+      history.replaceState(entry.body, '', entry.url)
+    } else {
+      history.pushState(entry.body, '', entry.url)
     }
   }
   try {
@@ -55,29 +54,27 @@ let route = async (url, options) => {
     let body = String(response.body)
     let url = safe(response.url)
     if (equals(loading, id)) {
-      root.innerHTML = body
-      if (response.url.toString() !== request.url.toString()) {
-        if (response.state === 'REPLACE' || cached) {
-          history.replaceState(null, '', safe(request.url))
+      render(body)
+      if (cached) {
+        history.replaceState(body, '', url)
+      } else if (requestUrl !== url) {
+        if (request.state === 'REPLACE') {
+          history.replaceState(null, '', requestUrl)
           history.replaceState(body, '', url)
         } else {
-          history.pushState(null, '', safe(request.url))
+          history.pushState(null, '', requestUrl)
           history.replaceState(body, '', url)
         }
       } else {
-        if (response.state === 'REPLACE' || cached) {
+        if (request.state === 'REPLACE') {
           history.replaceState(body, '', url)
         } else {
           history.pushState(body, '', url)
         }
       }
-      let element = root.querySelector('[autofocus]')
-      if (element) {
-        element.focus()
-      }
     }
     if (caching && request.method !== 'POST') {
-      caches[request.url] = { body, url }
+      caches[requestUrl] = { body, url }
       localStorage.setItem('caches', JSON.stringify(caches))
     }
   } finally {

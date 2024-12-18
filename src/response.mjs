@@ -1,6 +1,6 @@
 let tag = {}
 
-let redirect = (location) => {
+let redirect = location => {
   return { tag, location: location }
 }
 
@@ -11,8 +11,7 @@ let wrap = (request, response) => {
     return {
       tag,
       body: response,
-      url: request.url,
-      state: request.state
+      url: request.url
     }
   }
 }

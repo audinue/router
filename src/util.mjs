@@ -1,4 +1,5 @@
 import { hashing } from './config.mjs'
+import { root } from './root.mjs'
 import { defaults, routes } from './routes.mjs'
 
 let acceptable = url => {
@@ -21,5 +22,16 @@ let find = path => {
 
 let state = element => (element.hasAttribute('replace') ? 'REPLACE' : 'PUSH')
 
-export { acceptable, find, safe, self, state }
+let equals = (a, b) => {
+  return a && a.method === b.method && a.url === b.url
+}
 
+let render = html => {
+  root.innerHTML = html
+  let element = root.querySelector('[autofocus]')
+  if (element) {
+    element.focus()
+  }
+}
+
+export { acceptable, equals, find, render, safe, self, state }

@@ -20,10 +20,10 @@
   import { cache, bind, get, post, redirect, update } from './src/index.mjs'
   import { html } from 'https://esm.sh/@audinue/html'
 
-  const delay = () => new Promise(resolve => setTimeout(resolve, 1000))
+  let delay = () => new Promise(resolve => setTimeout(resolve, 1000))
 
-  update()
-  cache()
+  // update()
+  // cache()
   bind('#root')
 
   get('/', () => {
@@ -54,12 +54,6 @@
         <li>
           <a href="/foo">Foo</a>
         </li>
-        <li>
-          <a href="/bar">Bar</a>
-        </li>
-        <li>
-          <a href="/baz">Baz</a>
-        </li>
       </ul>
     `
   })
@@ -71,11 +65,12 @@
   })
 
   get('/redirect', async () => {
+    await delay()
     return redirect('/target')
   })
 
   get('/target', async () => {
-    return html`Redirect target page.`
+    return html`Redirect target page. ${Date.now()}`
   })
 
   get('/error', async () => {
@@ -119,12 +114,12 @@
 
   get('/foo', async () => {
     await delay()
-    return redirect('/bar')
     return html`
       <h1>Foo</h1>
-      <a href="/foo">foo</a>
-      <a href="/bar">bar</a>
-      <a href="/baz">baz</a>
+      <a href="/foo" replace>foo</a>
+      <a href="/bar" replace>bar</a>
+      <a href="/baz" replace>baz</a>
+      ${Date.now()}
     `
   })
 
@@ -132,9 +127,10 @@
     await delay()
     return html`
       <h1>Bar</h1>
-      <a href="/foo">foo</a>
-      <a href="/bar">bar</a>
-      <a href="/baz">baz</a>
+      <a href="/foo" replace>foo</a>
+      <a href="/bar" replace>bar</a>
+      <a href="/baz" replace>baz</a>
+      ${Date.now()}
     `
   })
 
@@ -142,9 +138,10 @@
     await delay()
     return html`
       <h1>Baz</h1>
-      <a href="/foo">foo</a>
-      <a href="/bar">bar</a>
-      <a href="/baz">baz</a>
+      <a href="/foo" replace>foo</a>
+      <a href="/bar" replace>bar</a>
+      <a href="/baz" replace>baz</a>
+      ${Date.now()}
     `
   })
 </script>

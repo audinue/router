@@ -5,9 +5,7 @@ let fetch = async (url, options) => {
   let request = create(url, options)
   let response = await match(request)
   if (response.location) {
-    return fetch(new URL(response.location, request.url), {
-      state: request.state
-    })
+    return fetch(new URL(response.location, request.url))
   } else {
     return response
   }
