@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "serve -s",
-    "build": "esbuild --bundle --minify --sourcemap --global-name=router --outfile=router.js src/index.mjs",
-    "publish": "npm run build && npm version patch && npm publish"
+    "build": "esbuild --bundle --minify --sourcemap --global-name=router --outfile=router.js src/index.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.24.0",
