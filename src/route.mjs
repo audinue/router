@@ -50,19 +50,20 @@ let route = async (url, options) => {
     requestUrl in caches
   if (cached) {
     let entry = caches[requestUrl]
-    render(entry.body, request)
+    render(entry.body)
     if (request.state === 'REPLACE') {
       history.replaceState(entry.body, '', entry.url)
     } else {
       history.pushState(entry.body, '', entry.url)
     }
+    document.body.scrollTo(0, 0)
   }
   try {
     let response = await fetch(request)
     let body = String(response.body)
     let url = safe(response.url)
     if (equals(loading, id)) {
-      render(body, request)
+      render(body)
       if (cached) {
         history.replaceState(body, '', url)
       } else if (requestUrl !== url) {
@@ -79,6 +80,9 @@ let route = async (url, options) => {
         } else {
           history.pushState(body, '', url)
         }
+      }
+      if (!request.restored) {
+        document.body.scrollTo(0, 0)
       }
     }
     if (caching && request.method !== 'POST') {

@@ -26,11 +26,8 @@ let equals = (a, b) => {
   return a && a.method === b.method && a.url === b.url
 }
 
-let render = (html, request) => {
+let render = (html) => {
   root.innerHTML = html
-  if (!request.restored) {
-    document.body.scrollTo(0, 0)
-  }
   let element = root.querySelector('[autofocus]')
   if (element) {
     element.focus()
