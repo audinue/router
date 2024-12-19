@@ -1,3 +1,5 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
   .loading ~ .spinner {
     display: block;
@@ -75,6 +77,9 @@
         </li>
         <li>
           <a href="/foo">Foo</a>
+        </li>
+        <li>
+          <a href="/posts">Posts</a>
         </li>
       </ul>
     `
@@ -164,6 +169,51 @@
       <a href="/bar" replace>bar</a>
       <a href="/baz">baz</a>
       ${Date.now()}
+    `
+  })
+
+  
+  get('/posts', async () => {
+    const posts = await (
+      await fetch('https://jsonplaceholder.typicode.com/posts')
+    ).json()
+    return html`
+      <h1>Posts</h1>
+      <ul>
+        ${posts.map(
+          post => html`
+            <li>
+              <a href="/post/${post.id}">${post.title}</a>
+            </li>
+          `
+        )}
+      </ul>
+    `
+  })
+
+  get('/post/:id', async req => {
+    const post = await (
+      await fetch(`https://jsonplaceholder.typicode.com/posts/${req.params.id}`)
+    ).json()
+    const comments = await (
+      await fetch(
+        `https://jsonplaceholder.typicode.com/comments/?postId=${req.params.id}`
+      )
+    ).json()
+    return html`
+      <h1>${post.title}</h1>
+      <div>${post.body}</div>
+      <h2>Comments</h2>
+      <ul>
+        ${comments.map(
+          comment => html`
+            <li>
+              <h3>${comment.name}</h3>
+              <div>${comment.body}</div>
+            </li>
+          `
+        )}
+      </ul>
     `
   })
 </script>

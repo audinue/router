@@ -50,7 +50,7 @@ let route = async (url, options) => {
     requestUrl in caches
   if (cached) {
     let entry = caches[requestUrl]
-    render(entry.body)
+    render(entry.body, request)
     if (request.state === 'REPLACE') {
       history.replaceState(entry.body, '', entry.url)
     } else {
@@ -62,7 +62,7 @@ let route = async (url, options) => {
     let body = String(response.body)
     let url = safe(response.url)
     if (equals(loading, id)) {
-      render(body)
+      render(body, request)
       if (cached) {
         history.replaceState(body, '', url)
       } else if (requestUrl !== url) {
