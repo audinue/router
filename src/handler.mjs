@@ -59,9 +59,7 @@ let domContentLoaded = () => {
   init()
   if (history.state !== null) {
     root.innerHTML = history.state
-    if (updating) {
-      reload({ restored: true })
-    }
+    reload({ restored: true })
   } else {
     reload()
   }
