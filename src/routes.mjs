@@ -24,15 +24,6 @@ let defaults = [
 
 let add = methods => {
   return (path, callback) => {
-    console.log(
-      path,
-      '^' +
-        path
-          .replace(/[/.-]/g, '\\$&')
-          .replace(/\:([^\\]+)/g, '(?<$1>[^/]+)')
-          .replace(/\*(.+)/g, '(?<$1>.*)') +
-        '$'
-    )
     let regExp = new RegExp(
       '^' +
         path
