@@ -57,7 +57,12 @@ let submit = event => {
 
 let domContentLoaded = () => {
   init()
-  reload()
+  if (updating && history.state !== null) {
+    root.innerHTML = history.state
+    reload({ restored: true })
+  } else {
+    reload()
+  }
   addEventListener('popstate', popstate)
   addEventListener('hashchange', hashchange)
   addEventListener('click', click)

@@ -36,7 +36,7 @@ let route = async (url, options) => {
       timeout = null
       root.classList.add('loading')
       notify({ type: 'loading' })
-    }, 100)
+    }, 500)
   }
   loading = id
   if (caching && !caches) {

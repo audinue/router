@@ -47,7 +47,6 @@
 
   update()
   cache()
-  hash()
   bind('#root')
 
   get('/', () => {
@@ -101,7 +100,7 @@
   })
 
   get('/error', async () => {
-    throw new Error('Awesome!')
+    throw new Error('Awesome')
   })
 
   get('/form-get', async req => {
