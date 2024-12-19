@@ -216,4 +216,12 @@
       </ul>
     `
   })
+
+  get('/deep/:foo/:bar/:baz', req => {
+    return html`<pre>${JSON.stringify(req.params)}</pre>`
+  })
+
+  get('/slug/*path', req => {
+    return html`<pre>${JSON.stringify(req.params)}</pre>`
+  })
 </script>
