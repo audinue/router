@@ -6,12 +6,17 @@ import { root } from './root.mjs'
 import { equals, render, safe } from './util.mjs'
 
 let loading = null
+let timeout = null
 
 let abort = () => {
   if (loading !== null) {
     loading = null
-    root.classList.remove('loading')
-    notify({ type: 'loaded' })
+    if (timeout !== null) {
+      clearTimeout(timeout)
+    } else {
+      root.classList.remove('loading')
+      notify({ type: 'loaded' })
+    }
   }
 }
 
@@ -27,8 +32,11 @@ let route = async (url, options) => {
     return
   }
   if (!loading) {
-    root.classList.add('loading')
-    notify({ type: 'loading' })
+    timeout = setTimeout(() => {
+      timeout = null
+      root.classList.add('loading')
+      notify({ type: 'loading' })
+    }, 100)
   }
   loading = id
   if (caching && !caches) {
@@ -79,9 +87,7 @@ let route = async (url, options) => {
     }
   } finally {
     if (equals(loading, id)) {
-      loading = null
-      root.classList.remove('loading')
-      notify({ type: 'loaded' })
+      abort()
     }
   }
 }

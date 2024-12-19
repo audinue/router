@@ -16,14 +16,35 @@
   <img src="https://api.iconify.design/svg-spinners:270-ring-with-bg.svg" />
 </div>
 
+<link rel="stylesheet" href="https://unpkg.com/nprogress@0.2.0/nprogress.css" />
+<script src="https://unpkg.com/nprogress@0.2.0/nprogress.js"></script>
 <script type="module">
-  import { cache, bind, hash, get, post, redirect, update } from './src/index.mjs'
+  import {
+    cache,
+    bind,
+    hash,
+    get,
+    post,
+    redirect,
+    update,
+    subscribe
+  } from './src/index.mjs'
   import { html } from 'https://esm.sh/@audinue/html'
+
+  NProgress.configure({ showSpinner: false })
+
+  subscribe(e => {
+    if (e.type === 'loading') {
+      NProgress.start()
+    } else {
+      NProgress.done()
+    }
+  })
 
   let delay = () => new Promise(resolve => setTimeout(resolve, 1000))
 
-  // update()
-  // cache()
+  update()
+  cache()
   hash()
   bind('#root')
 
@@ -38,7 +59,7 @@
           <a href="/error">Error</a>
         </li>
         <li>
-          <a href="/async">Async</a>
+          <a href="/async/awesome">Async</a>
         </li>
         <li>
           <a href="/redirect">Redirect</a>
@@ -59,10 +80,10 @@
     `
   })
 
-  get('/async', async () => {
+  get('/async/:id', async req => {
     console.log('/async')
     await delay()
-    return html`Now: ${Date.now()}`
+    return html`ID: ${req.params.id} Now: ${Date.now()}`
   })
 
   get('/redirect', async () => {
@@ -119,7 +140,7 @@
       <h1>Foo</h1>
       <a href="/foo" replace>foo</a>
       <a href="/bar" replace>bar</a>
-      <a href="/baz" replace>baz</a>
+      <a href="/baz">baz</a>
       ${Date.now()}
     `
   })
@@ -130,7 +151,7 @@
       <h1>Bar</h1>
       <a href="/foo" replace>foo</a>
       <a href="/bar" replace>bar</a>
-      <a href="/baz" replace>baz</a>
+      <a href="/baz">baz</a>
       ${Date.now()}
     `
   })
@@ -141,7 +162,7 @@
       <h1>Baz</h1>
       <a href="/foo" replace>foo</a>
       <a href="/bar" replace>bar</a>
-      <a href="/baz" replace>baz</a>
+      <a href="/baz">baz</a>
       ${Date.now()}
     `
   })
