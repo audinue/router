@@ -57,9 +57,11 @@ let submit = event => {
 
 let domContentLoaded = () => {
   init()
-  if (updating && history.state !== null) {
+  if (history.state !== null) {
     root.innerHTML = history.state
-    reload({ restored: true })
+    if (updating) {
+      reload({ restored: true })
+    }
   } else {
     reload()
   }

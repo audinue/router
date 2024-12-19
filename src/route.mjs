@@ -56,7 +56,7 @@ let route = async (url, options) => {
     } else {
       history.pushState(entry.body, '', entry.url)
     }
-    document.body.scrollTo(0, 0)
+    scrollTo(0, 0)
   }
   try {
     let response = await fetch(request)
@@ -81,8 +81,8 @@ let route = async (url, options) => {
           history.pushState(body, '', url)
         }
       }
-      if (!request.restored) {
-        document.body.scrollTo(0, 0)
+      if (!request.restored && !cached) {
+        scrollTo(0, 0)
       }
     }
     if (caching && request.method !== 'POST') {

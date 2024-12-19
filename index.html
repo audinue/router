@@ -1,4 +1,6 @@
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
 
 <style>
   .loading ~ .spinner {
@@ -30,7 +32,7 @@
     redirect,
     update,
     subscribe
-  } from './src/index.mjs'
+  } from '/src/index.mjs'
   import { html } from 'https://esm.sh/@audinue/html'
 
   NProgress.configure({ showSpinner: false })
@@ -171,7 +173,6 @@
     `
   })
 
-  
   get('/posts', async () => {
     const posts = await (
       await fetch('https://jsonplaceholder.typicode.com/posts')
