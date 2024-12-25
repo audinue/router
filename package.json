@@ -1,4 +1,5 @@
 {
+	"name": "@audinue/router",
 	"type": "module",
 	"types": "router.d.ts",
 	"module": "router.js",
@@ -8,5 +9,8 @@
 	"devDependencies": {
 		"@audinue/html": "^1.1.0",
 		"vite": "^6.0.5"
-	}
+	},
+  "publishConfig": {
+    "access": "public"
+  }
 }
