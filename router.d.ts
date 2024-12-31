@@ -26,3 +26,15 @@ export type RouteConfig = ServeConfig & {
 };
 
 export const route: (config: RouteConfig) => Server;
+
+export type Router = {
+  get(path: string, fetch: Fetch): Router;
+  post(path: string, fetch: Fetch): Router;
+  all(path: string, fetch: Fetch): Router;
+  middleware(fetch: Fetch): Router;
+  notFound(fetch: Fetch): Router;
+  error(fetch: Fetch): Router;
+  start(config?: ServeConfig): Server;
+};
+
+export const Router: () => Router;
