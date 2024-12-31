@@ -1,52 +1,28 @@
-import { serve } from '@audinue/server'
+import { ServeConfig, Server } from "@audinue/server";
 
-export type GetRequest = {
-  method: 'GET'
-  url: URL
-  params: Record<string, string>
-}
+export type Request = {
+  method: "GET" | "POST";
+  url: URL;
+  params: Record<string, string>;
+  body?: FormData;
+  error?: any;
+};
 
-export type PostRequest = {
-  method: 'POST'
-  url: URL
-  params: Record<string, string>
-  body: FormData
-}
+export type Response = string | { location: string };
 
-export type AllRequest = {
-  method: 'GET' | 'POST'
-  url: URL
-  params: Record<string, string>
-  body?: FormData
-}
+export type Fetch = (request: Request) => Response | Promise<Response>;
 
-export type ErrorRequest = AllRequest & { error: Error }
+export type Route = {
+  method?: "GET" | "POST";
+  path: string;
+  fetch: Fetch;
+};
 
-export type Response =
-  | string
-  | { location: string }
-  | Promise<string>
-  | Promise<{ location: string }>
+export type RouteConfig = ServeConfig & {
+  routes: Route[];
+  middleware?: Fetch;
+  notFound?: Fetch;
+  error?: Fetch;
+};
 
-export const route: (options: {
-  routes: (
-    | {
-        method: 'GET'
-        path: string
-        fetch(request: GetRequest): Response
-      }
-    | {
-        method: 'POST'
-        path: string
-        fetch(request: PostRequest): Response
-      }
-    | {
-        method?: 'ALL'
-        path: string
-        fetch(request: AllRequest): Response
-      }
-  )[]
-  middleware?(request: AllRequest): Response
-  notFound?(request: AllRequest): Response
-  error?(request: ErrorRequest): Response
-}) => ReturnType<typeof serve>
+export const route: (config: RouteConfig) => Server;
