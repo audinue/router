@@ -4,7 +4,7 @@
 	"types": "router.d.ts",
 	"module": "router.js",
 	"dependencies": {
-		"@audinue/server": "^0.0.3"
+		"@audinue/server": "^0.0.4"
 	},
 	"devDependencies": {
 		"@audinue/html": "^2.0.0",

@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@audinue/server':
-        specifier: ^0.0.3
-        version: 0.0.3
+        specifier: ^0.0.4
+        version: 0.0.4
     devDependencies:
       '@audinue/html':
         specifier: ^2.0.0
@@ -24,8 +24,8 @@ packages:
   '@audinue/html@2.0.0':
     resolution: {integrity: sha512-jGWrg27vGK3EC6x//ZnNlAcsyMv9BpJbG5DkQGNGRN4DlCl9TzipDR7JEgNtnfzbZe3ldV0NzLxr6U/ZEZhe2A==}
 
-  '@audinue/server@0.0.3':
-    resolution: {integrity: sha512-DbnlH/QnOkYsInDR1pK3jiVli+io4uXTvelhCUgQ8J/x//JlSAeCkxGs19GzXIL4duEzTW451NKi3wRPsQ6K1w==}
+  '@audinue/server@0.0.4':
+    resolution: {integrity: sha512-hkCn5CT2OzLPoG+x95WcMbZ/2/6XTMe6blDKOiCxhg5DssmmKXtvU7bosG9jItkznulQnrlUOqvV+F0n9+S/Jg==}
 
   '@esbuild/aix-ppc64@0.24.2':
     resolution: {integrity: sha512-thpVCb/rhxE/BnMLQ7GReQLLN8q9qbHmI55F4489/ByVg2aQaQ6kbcLb6FHkocZzQhxc4gx0sCk0tJkKBFzDhA==}
@@ -350,7 +350,7 @@ snapshots:
 
   '@audinue/html@2.0.0': {}
 
-  '@audinue/server@0.0.3': {}
+  '@audinue/server@0.0.4': {}
 
   '@esbuild/aix-ppc64@0.24.2':
     optional: true

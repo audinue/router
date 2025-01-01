@@ -1,6 +1,6 @@
 import { serve } from "@audinue/server";
 
-export let route = ({
+let route = ({
   routes,
   middleware = async (request, next) => next(request),
   notFound = async (request) =>
@@ -88,3 +88,6 @@ export let Router = () => {
     },
   };
 };
+
+export { route };
+export { redirect } from "@audinue/server";

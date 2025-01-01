@@ -1,5 +1,5 @@
 import { html } from "@audinue/html";
-import { Router } from "../router";
+import { Router, redirect } from "../router";
 
 const layout = (title, content) => html`
   <ul>
@@ -38,9 +38,9 @@ Router()
         req.body.get("username") === "admin" &&
         req.body.get("password") === "admin"
       ) {
-        return { location: "/login?ok" };
+        return redirect("/login?ok");
       } else {
-        return { location: "/login?error" };
+        return redirect("/login?error");
       }
     }
     return layout(
@@ -107,9 +107,9 @@ Router()
       req.body.get("username") === "admin" &&
       req.body.get("password") === "admin"
     ) {
-      return { location: "/login2?ok" };
+      return redirect("/login2?ok");
     } else {
-      return { location: "/login2?error" };
+      return redirect("/login2?error");
     }
   })
   .error((req) => {
@@ -129,5 +129,5 @@ Router()
     );
   })
   .start({
-    reload: true
+    reload: true,
   });
